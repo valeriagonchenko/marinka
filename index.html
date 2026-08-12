@@ -390,8 +390,12 @@
     }
     .photo-frame img{
       width:100%;height:100%;
-      object-fit:contain;
+      object-fit:cover;
       background:linear-gradient(180deg,#fff8fa,#f7e5eb);
+      transition:opacity .28s ease, transform .5s ease;
+    }
+    .photo-frame img.chibi-photo{
+      object-fit:contain;
       padding:14px;
     }
     .gallery-controls{
@@ -432,6 +436,38 @@
       font-size:27px;
       font-weight:700;
       color:#b26380;
+    }
+
+    .audio-greeting{
+      display:none;
+      margin-top:24px;
+      padding:16px 18px;
+      border:1px solid rgba(200,128,154,.22);
+      border-radius:24px;
+      background:rgba(255,255,255,.66);
+      box-shadow:0 12px 28px rgba(121,71,91,.09);
+    }
+    .audio-greeting.visible{display:block}
+    .audio-label{
+      font-size:13px;
+      font-weight:800;
+      color:#9c7181;
+      margin-bottom:10px;
+    }
+    .audio-row{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .audio-btn{
+      min-height:48px;
+      padding:12px 20px;
+    }
+    .audio-status{
+      font-size:13px;
+      color:#9a7684;
+      font-weight:700;
     }
 
     /* FINAL */
@@ -609,9 +645,7 @@
 
           <div class="gallery-controls">
             <button class="gallery-btn" id="prevPhoto" aria-label="Предыдущее фото">‹</button>
-            <span class="dot active"></span>
-            <span class="dot"></span>
-            <span class="dot"></span>
+            <span id="galleryDots" style="display:flex;align-items:center;gap:9px;"></span>
             <button class="gallery-btn" id="nextPhoto" aria-label="Следующее фото">›</button>
           </div>
         </div>
@@ -627,6 +661,15 @@
           </p>
 
           <span class="signature" id="signature">Сергей ♡</span>
+
+          <div class="audio-greeting" id="audioGreeting">
+            <div class="audio-label">Голосовое поздравление ♡</div>
+            <div class="audio-row">
+              <button class="btn btn-primary audio-btn" id="audioBtn">▶ Послушать Сергея</button>
+              <span class="audio-status" id="audioStatus">Нажми, чтобы включить</span>
+            </div>
+            <audio id="greetingAudio" preload="metadata"></audio>
+          </div>
 
           <div style="margin-top:32px">
             <button class="btn btn-primary" id="nextStageBtn">Дальше</button>
@@ -665,7 +708,9 @@
       - text        — текст поздравления
       - signature   — подпись
       - photos      — массив совместных фото
+      - audio       — голосовое поздравление (если есть)
 
+      Фото в поздравлении перелистываются автоматически каждые 3 секунды.
       Сейчас сделано 5 этапов.
       На всех этапах временно используется один и тот же вопрос.
     */
@@ -674,9 +719,10 @@
       {
         name: "Сергей",
         title: "Поздравление от Сергея",
-        text: "Маринка, здесь будет поздравление от Сергея. Пока оставляю этот текст как заглушку — потом просто заменишь его на настоящее поздравление.",
+        text: "А теперь — самое милое: настоящее голосовое поздравление от Сергея ♡",
         signature: "Сергей ♡",
-        photos: ["marina_chibi.png", "marina_chibi.png", "marina_chibi.png"]
+        photos: ["photo1.png", "photo2.png", "photo3.png", "photo4.png"],
+        audio: "sergei.mp3"
       },
       {
         name: "Коллега 2",
@@ -727,13 +773,50 @@
     const feedback = document.getElementById("feedback");
 
     const galleryImage = document.getElementById("galleryImage");
-    const dots = [...document.querySelectorAll(".dot")];
+    const galleryDots = document.getElementById("galleryDots");
 
     const congratsTitle = document.getElementById("congratsTitle");
     const congratsText = document.getElementById("congratsText");
     const signature = document.getElementById("signature");
 
+    const audioGreeting = document.getElementById("audioGreeting");
+    const greetingAudio = document.getElementById("greetingAudio");
+    const audioBtn = document.getElementById("audioBtn");
+    const audioStatus = document.getElementById("audioStatus");
+
+    let galleryTimer = null;
+
+    function stopGalleryAutoplay(){
+      if(galleryTimer){
+        clearInterval(galleryTimer);
+        galleryTimer = null;
+      }
+    }
+
+    function startGalleryAutoplay(){
+      stopGalleryAutoplay();
+      const photos = stages[currentStage]?.photos || [];
+      if(photos.length <= 1) return;
+
+      galleryTimer = setInterval(() => {
+        currentPhoto = (currentPhoto + 1) % photos.length;
+        renderPhoto();
+      }, 3000);
+    }
+
+    function stopGreetingAudio(){
+      greetingAudio.pause();
+      greetingAudio.currentTime = 0;
+      audioBtn.textContent = "▶ Послушать Сергея";
+      audioStatus.textContent = "Нажми, чтобы включить";
+    }
+
     function showScreen(name){
+      if(name !== "congrats"){
+        stopGalleryAutoplay();
+        if(!greetingAudio.paused) stopGreetingAudio();
+      }
+
       Object.values(screens).forEach(screen => screen.classList.remove("active"));
       screens[name].classList.add("active");
       window.scrollTo({top:0, behavior:"smooth"});
@@ -760,18 +843,44 @@
       congratsText.textContent = stage.text;
       signature.textContent = stage.signature;
 
+      if(stage.audio){
+        audioGreeting.classList.add("visible");
+        greetingAudio.src = stage.audio;
+        audioBtn.textContent = "▶ Послушать Сергея";
+        audioStatus.textContent = "Нажми, чтобы включить";
+      }else{
+        audioGreeting.classList.remove("visible");
+        greetingAudio.removeAttribute("src");
+        greetingAudio.load();
+      }
+
       renderPhoto();
       showScreen("congrats");
+      startGalleryAutoplay();
     }
 
     function renderPhoto(){
       const stage = stages[currentStage];
       const photos = stage.photos;
-      galleryImage.src = photos[currentPhoto] || "marina_chibi.png";
+      const src = photos[currentPhoto] || "marina_chibi.png";
 
-      dots.forEach((dot,index) => {
-        dot.classList.toggle("active", index === currentPhoto);
-        dot.style.display = index < photos.length ? "block" : "none";
+      galleryImage.style.opacity = "0";
+      setTimeout(() => {
+        galleryImage.src = src;
+        galleryImage.classList.toggle("chibi-photo", src.includes("marina_chibi"));
+        galleryImage.style.opacity = "1";
+      }, 120);
+
+      galleryDots.innerHTML = "";
+      photos.forEach((_, index) => {
+        const dot = document.createElement("span");
+        dot.className = "dot" + (index === currentPhoto ? " active" : "");
+        dot.addEventListener("click", () => {
+          currentPhoto = index;
+          renderPhoto();
+          startGalleryAutoplay();
+        });
+        galleryDots.appendChild(dot);
       });
     }
 
@@ -818,12 +927,44 @@
       const photos = stages[currentStage].photos;
       currentPhoto = (currentPhoto - 1 + photos.length) % photos.length;
       renderPhoto();
+      startGalleryAutoplay();
     });
 
     document.getElementById("nextPhoto").addEventListener("click", () => {
       const photos = stages[currentStage].photos;
       currentPhoto = (currentPhoto + 1) % photos.length;
       renderPhoto();
+      startGalleryAutoplay();
+    });
+
+    audioBtn.addEventListener("click", async () => {
+      try{
+        if(greetingAudio.paused){
+          await greetingAudio.play();
+        }else{
+          greetingAudio.pause();
+        }
+      }catch(error){
+        audioStatus.textContent = "Не удалось запустить аудио. Проверь файл sergei.mp3";
+      }
+    });
+
+    greetingAudio.addEventListener("play", () => {
+      audioBtn.textContent = "❚❚ Пауза";
+      audioStatus.textContent = "Сергей говорит… ♡";
+    });
+
+    greetingAudio.addEventListener("pause", () => {
+      if(greetingAudio.currentTime > 0 && !greetingAudio.ended){
+        audioBtn.textContent = "▶ Продолжить";
+        audioStatus.textContent = "На паузе";
+      }
+    });
+
+    greetingAudio.addEventListener("ended", () => {
+      audioBtn.textContent = "↻ Послушать ещё раз";
+      audioStatus.textContent = "Поздравление прослушано ♡";
+      greetingAudio.currentTime = 0;
     });
 
     document.getElementById("nextStageBtn").addEventListener("click", () => {
