@@ -358,6 +358,65 @@
       color:#aa617b;
       font-weight:800;
     }
+    .answers.image-answers{
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      max-width:920px;
+      gap:16px;
+    }
+    .answer.image-answer{
+      min-width:0;
+      padding:12px 12px 16px;
+      flex-direction:column;
+      align-items:stretch;
+      text-align:center;
+      gap:10px;
+      border-radius:26px;
+    }
+    .answer.image-answer:hover{transform:translateY(-4px)}
+    .answer-image{
+      width:100%;
+      aspect-ratio:1/1;
+      border-radius:19px;
+      overflow:hidden;
+      background:rgba(255,250,252,.9);
+      border:1px solid rgba(200,128,154,.14);
+    }
+    .answer-image img{
+      display:block;
+      width:100%;
+      height:100%;
+      object-fit:contain;
+    }
+    .answer-caption{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      min-height:30px;
+    }
+    .answer-reveal{
+      display:none;
+      margin-top:18px;
+      text-align:center;
+      animation:fadeIn .38s ease both;
+    }
+    .answer-reveal.visible{display:block}
+    .answer-reveal img{
+      display:block;
+      width:min(350px,100%);
+      max-height:330px;
+      object-fit:contain;
+      margin:0 auto 14px;
+      border-radius:28px;
+      background:rgba(255,255,255,.62);
+      box-shadow:0 16px 38px rgba(121,71,91,.12);
+    }
+    .answer-reveal-text{
+      font-family:'Cormorant Garamond',serif;
+      font-size:30px;
+      font-weight:700;
+      color:#a65e79;
+    }
 
     /* CONGRATS */
     #congratsScreen{align-items:center;justify-content:center}
@@ -538,6 +597,16 @@
       .quiz-side{display:none}
       .question{font-size:36px}
       .answer{font-size:15px}
+      .answers.image-answers{grid-template-columns:1fr}
+      .answer.image-answer{
+        display:grid;
+        grid-template-columns:112px minmax(0,1fr);
+        align-items:center;
+        text-align:left;
+        padding:10px;
+      }
+      .answer.image-answer .answer-image{width:112px}
+      .answer.image-answer .answer-caption{justify-content:flex-start}
       .congrats-card{padding:18px}
       .photo-frame{width:100%;max-height:none}
       .final-card{padding:30px 22px 12px}
@@ -608,28 +677,16 @@
         <div class="quiz-card glass">
           <div class="eyebrow" id="questionLabel">Вопрос 1 из 5</div>
 
-          <div class="question">
-            Что обязательно нужно сделать, если вдруг освободилась хоть одна минуточка?
-          </div>
+          <div class="question" id="questionText"></div>
 
-          <div class="answers">
-            <button class="answer" data-answer="0">
-              <span class="num">1</span>
-              <span>Ещё немного поработать</span>
-            </button>
-
-            <button class="answer" data-answer="1">
-              <span class="num">2</span>
-              <span>Съесть конфету</span>
-            </button>
-
-            <button class="answer" data-answer="2">
-              <span class="num">3</span>
-              <span>Сказать «СЕРЕЖААААААА!»</span>
-            </button>
-          </div>
+          <div class="answers" id="answerList"></div>
 
           <div class="feedback" id="feedback"></div>
+
+          <div class="answer-reveal" id="answerReveal">
+            <img id="answerRevealImage" src="" alt="">
+            <div class="answer-reveal-text" id="answerRevealText"></div>
+          </div>
         </div>
       </div>
     </section>
@@ -711,8 +768,8 @@
       - audio       — голосовое поздравление (если есть)
 
       Фото в поздравлении перелистываются автоматически каждые 3 секунды.
-      Сейчас сделано 5 этапов.
-      На всех этапах временно используется один и тот же вопрос.
+      У каждого этапа теперь может быть свой вопрос и свои варианты ответа.
+      Второй этап — отдельный вопрос про Дашу и ослика.
     */
 
     const stages = [
@@ -722,35 +779,93 @@
         text: "А теперь — самое милое: настоящее голосовое поздравление от Сергея ♡",
         signature: "Сергей ♡",
         photos: ["photo1.png", "photo2.png", "photo3.png", "photo4.png"],
-        audio: "sergei.mp3"
+        audio: "sergei.mp3",
+        quiz: {
+          question: "Что обязательно нужно сделать, если вдруг освободилась хоть одна минуточка?",
+          options: [
+            { text: "Ещё немного поработать" },
+            { text: "Съесть конфету" },
+            { text: "Сказать «СЕРЕЖААААААА!»" }
+          ],
+          correct: 2,
+          wrongFeedback: "Мы сделаем вид, что этого ответа не было. Попробуй ещё раз 😌",
+          correctFeedback: "ДАААА! Всё по классике ♡"
+        }
       },
       {
-        name: "Коллега 2",
-        title: "Ещё одно поздравление",
-        text: "Здесь будет поздравление от следующего коллеги.",
-        signature: "С любовью ♡",
-        photos: ["marina_chibi.png", "marina_chibi.png", "marina_chibi.png"]
+        name: "Даша",
+        title: "Поздравление от Даши",
+        text: "",
+        signature: "",
+        photos: ["даша.png"],
+        quiz: {
+          question: "О чём думает Даша чаще всего на работе?",
+          type: "image",
+          options: [
+            { text: "Пойти домой", image: "домой.png" },
+            { text: "Обед", image: "обед.png" },
+            { text: "Ослик", image: "ослик.png" }
+          ],
+          correct: 2,
+          wrongFeedback: "Да, но о чём-то думает ещё чаще! 😌",
+          correctFeedback: "Ну конечно. ОСЛИК ♡",
+          revealImage: "даша и ослик.png",
+          revealDelay: 2300
+        }
       },
       {
         name: "Коллега 3",
         title: "И ещё одно поздравление",
         text: "Здесь будет ещё одно личное поздравление для Маринки.",
         signature: "С любовью ♡",
-        photos: ["marina_chibi.png", "marina_chibi.png", "marina_chibi.png"]
+        photos: ["marina_chibi.png"],
+        quiz: {
+          question: "Что обязательно нужно сделать, если вдруг освободилась хоть одна минуточка?",
+          options: [
+            { text: "Ещё немного поработать" },
+            { text: "Съесть конфету" },
+            { text: "Сказать «СЕРЕЖААААААА!»" }
+          ],
+          correct: 2,
+          wrongFeedback: "Мы сделаем вид, что этого ответа не было. Попробуй ещё раз 😌",
+          correctFeedback: "ДАААА! Всё по классике ♡"
+        }
       },
       {
         name: "Коллега 4",
         title: "Поздравление",
         text: "Здесь будет следующий текст поздравления.",
         signature: "С любовью ♡",
-        photos: ["marina_chibi.png", "marina_chibi.png", "marina_chibi.png"]
+        photos: ["marina_chibi.png"],
+        quiz: {
+          question: "Что обязательно нужно сделать, если вдруг освободилась хоть одна минуточка?",
+          options: [
+            { text: "Ещё немного поработать" },
+            { text: "Съесть конфету" },
+            { text: "Сказать «СЕРЕЖААААААА!»" }
+          ],
+          correct: 2,
+          wrongFeedback: "Мы сделаем вид, что этого ответа не было. Попробуй ещё раз 😌",
+          correctFeedback: "ДАААА! Всё по классике ♡"
+        }
       },
       {
         name: "Коллега 5",
         title: "Последнее поздравление",
         text: "Здесь будет финальное персональное поздравление перед общим экраном.",
         signature: "С любовью ♡",
-        photos: ["marina_chibi.png", "marina_chibi.png", "marina_chibi.png"]
+        photos: ["marina_chibi.png"],
+        quiz: {
+          question: "Что обязательно нужно сделать, если вдруг освободилась хоть одна минуточка?",
+          options: [
+            { text: "Ещё немного поработать" },
+            { text: "Съесть конфету" },
+            { text: "Сказать «СЕРЕЖААААААА!»" }
+          ],
+          correct: 2,
+          wrongFeedback: "Мы сделаем вид, что этого ответа не было. Попробуй ещё раз 😌",
+          correctFeedback: "ДАААА! Всё по классике ♡"
+        }
       }
     ];
 
@@ -770,7 +885,12 @@
     const progressText = document.getElementById("progressText");
     const progressFill = document.getElementById("progressFill");
     const questionLabel = document.getElementById("questionLabel");
+    const questionText = document.getElementById("questionText");
+    const answerList = document.getElementById("answerList");
     const feedback = document.getElementById("feedback");
+    const answerReveal = document.getElementById("answerReveal");
+    const answerRevealImage = document.getElementById("answerRevealImage");
+    const answerRevealText = document.getElementById("answerRevealText");
 
     const galleryImage = document.getElementById("galleryImage");
     const galleryDots = document.getElementById("galleryDots");
@@ -807,7 +927,7 @@
     function stopGreetingAudio(){
       greetingAudio.pause();
       greetingAudio.currentTime = 0;
-      audioBtn.textContent = "▶ Послушать Сергея";
+      audioBtn.textContent = `▶ Послушать ${stages[currentStage]?.name || "поздравление"}`;
       audioStatus.textContent = "Нажми, чтобы включить";
     }
 
@@ -824,15 +944,82 @@
 
     function updateQuiz(){
       const visibleNumber = currentStage + 1;
+      const quiz = stages[currentStage].quiz;
+
       questionLabel.textContent = `Вопрос ${visibleNumber} из ${totalStages}`;
       progressText.textContent = `${visibleNumber} / ${totalStages}`;
       progressFill.style.width = `${(visibleNumber / totalStages) * 100}%`;
 
+      questionText.textContent = quiz.question;
       feedback.textContent = "";
-      document.querySelectorAll(".answer").forEach(btn => {
-        btn.disabled = false;
-        btn.classList.remove("correct","wrong");
+
+      answerReveal.classList.remove("visible");
+      answerRevealImage.src = "";
+      answerRevealText.textContent = "";
+
+      answerList.style.display = "";
+      answerList.innerHTML = "";
+      answerList.className = "answers" + (quiz.type === "image" ? " image-answers" : "");
+
+      quiz.options.forEach((option, index) => {
+        const button = document.createElement("button");
+        button.className = "answer" + (quiz.type === "image" ? " image-answer" : "");
+        button.dataset.answer = index;
+
+        if(quiz.type === "image"){
+          const imageWrap = document.createElement("span");
+          imageWrap.className = "answer-image";
+
+          const img = document.createElement("img");
+          img.src = option.image;
+          img.alt = option.text;
+
+          const caption = document.createElement("span");
+          caption.className = "answer-caption";
+          caption.innerHTML = `<span class="num">${index + 1}</span><span>${option.text}</span>`;
+
+          imageWrap.appendChild(img);
+          button.appendChild(imageWrap);
+          button.appendChild(caption);
+        }else{
+          button.innerHTML = `<span class="num">${index + 1}</span><span>${option.text}</span>`;
+        }
+
+        button.addEventListener("click", () => handleAnswer(button, index));
+        answerList.appendChild(button);
       });
+    }
+
+    function handleAnswer(button, answerIndex){
+      const quiz = stages[currentStage].quiz;
+
+      if(answerIndex === quiz.correct){
+        button.classList.add("correct");
+        feedback.textContent = quiz.correctFeedback || "Правильно ♡";
+        answerList.querySelectorAll(".answer").forEach(btn => btn.disabled = true);
+
+        if(quiz.revealImage){
+          answerList.style.display = "none";
+          feedback.textContent = "";
+
+          answerRevealImage.src = quiz.revealImage;
+          answerRevealImage.alt = quiz.correctFeedback || "Правильный ответ";
+          answerRevealText.textContent = quiz.correctFeedback || "";
+          answerReveal.classList.add("visible");
+
+          setTimeout(() => {
+            answerList.style.display = "";
+            openCongrats();
+          }, quiz.revealDelay || 2200);
+        }else{
+          setTimeout(openCongrats, 650);
+        }
+      }else{
+        button.classList.remove("wrong");
+        void button.offsetWidth;
+        button.classList.add("wrong");
+        feedback.textContent = quiz.wrongFeedback || "Почти! Попробуй ещё раз 😌";
+      }
     }
 
     function openCongrats(){
@@ -840,13 +1027,17 @@
       currentPhoto = 0;
 
       congratsTitle.textContent = stage.title;
-      congratsText.textContent = stage.text;
-      signature.textContent = stage.signature;
+
+      congratsText.textContent = stage.text || "";
+      congratsText.style.display = stage.text ? "block" : "none";
+
+      signature.textContent = stage.signature || "";
+      signature.style.display = stage.signature ? "inline-block" : "none";
 
       if(stage.audio){
         audioGreeting.classList.add("visible");
         greetingAudio.src = stage.audio;
-        audioBtn.textContent = "▶ Послушать Сергея";
+        audioBtn.textContent = `▶ Послушать ${stage.name}`;
         audioStatus.textContent = "Нажми, чтобы включить";
       }else{
         audioGreeting.classList.remove("visible");
@@ -900,28 +1091,6 @@
       showScreen("quiz");
     });
 
-    document.querySelectorAll(".answer").forEach(button => {
-      button.addEventListener("click", () => {
-        const answer = Number(button.dataset.answer);
-
-        if(answer === 2){
-          button.classList.add("correct");
-          feedback.textContent = "ДАААА! Всё по классике ♡";
-
-          document.querySelectorAll(".answer").forEach(btn => btn.disabled = true);
-
-          setTimeout(() => {
-            openCongrats();
-          }, 650);
-
-        } else {
-          button.classList.remove("wrong");
-          void button.offsetWidth;
-          button.classList.add("wrong");
-          feedback.textContent = "Мы сделаем вид, что этого ответа не было. Попробуй ещё раз 😌";
-        }
-      });
-    });
 
     document.getElementById("prevPhoto").addEventListener("click", () => {
       const photos = stages[currentStage].photos;
