@@ -664,7 +664,7 @@
     <section class="screen" id="quizScreen">
       <div class="quiz-wrap">
         <aside class="quiz-side glass">
-          <img class="mini-chibi" src="marina_chibi.png" alt="">
+          <img class="mini-chibi" id="sideCharacter" src="marina_chibi.png" alt="">
           <div class="progress-block">
             <div class="progress-label">
               <span>Проверка памяти</span>
@@ -775,6 +775,7 @@
     const stages = [
       {
         name: "Сергей",
+        sideImage: "marina_chibi.png",
         title: "Поздравление от Сергея",
         text: "А теперь — самое милое: настоящее голосовое поздравление от Сергея ♡",
         signature: "Сергей ♡",
@@ -794,6 +795,7 @@
       },
       {
         name: "Даша",
+        sideImage: "даша.png",
         title: "Поздравление от Даши",
         text: "",
         signature: "",
@@ -810,11 +812,12 @@
           wrongFeedback: "Да, но о чём-то думает ещё чаще! 😌",
           correctFeedback: "Ну конечно. ОСЛИК ♡",
           revealImage: "даша и ослик.png",
-          revealDelay: 2300
+          revealDelay: 4200
         }
       },
       {
         name: "Коллега 3",
+        sideImage: "marina_chibi.png",
         title: "И ещё одно поздравление",
         text: "Здесь будет ещё одно личное поздравление для Маринки.",
         signature: "С любовью ♡",
@@ -833,6 +836,7 @@
       },
       {
         name: "Коллега 4",
+        sideImage: "marina_chibi.png",
         title: "Поздравление",
         text: "Здесь будет следующий текст поздравления.",
         signature: "С любовью ♡",
@@ -851,6 +855,7 @@
       },
       {
         name: "Коллега 5",
+        sideImage: "marina_chibi.png",
         title: "Последнее поздравление",
         text: "Здесь будет финальное персональное поздравление перед общим экраном.",
         signature: "С любовью ♡",
@@ -886,6 +891,7 @@
     const progressFill = document.getElementById("progressFill");
     const questionLabel = document.getElementById("questionLabel");
     const questionText = document.getElementById("questionText");
+    const sideCharacter = document.getElementById("sideCharacter");
     const answerList = document.getElementById("answerList");
     const feedback = document.getElementById("feedback");
     const answerReveal = document.getElementById("answerReveal");
@@ -944,7 +950,11 @@
 
     function updateQuiz(){
       const visibleNumber = currentStage + 1;
-      const quiz = stages[currentStage].quiz;
+      const stage = stages[currentStage];
+      const quiz = stage.quiz;
+
+      sideCharacter.src = stage.sideImage || "marina_chibi.png";
+      sideCharacter.alt = stage.name || "";
 
       questionLabel.textContent = `Вопрос ${visibleNumber} из ${totalStages}`;
       progressText.textContent = `${visibleNumber} / ${totalStages}`;
