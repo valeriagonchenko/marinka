@@ -613,6 +613,23 @@
       object-fit:cover;
       padding:0;
     }
+
+    .congrats-card.square-gallery{
+      grid-template-columns:minmax(360px,520px) minmax(0,1fr);
+      gap:34px;
+    }
+    .congrats-card.square-gallery .gallery{
+      min-height:auto;
+    }
+    .congrats-card.square-gallery .photo-frame{
+      width:min(520px,100%);
+      aspect-ratio:1/1;
+      border-radius:30px;
+    }
+    .congrats-card.square-gallery .photo-frame img{
+      object-fit:cover;
+      padding:0;
+    }
     .gallery-btn{
       border:0;background:transparent;cursor:pointer;
       width:30px;height:30px;border-radius:50%;
@@ -726,6 +743,9 @@
         padding:24px;
       }
       .congrats-card.single-horizontal{
+        grid-template-columns:1fr;
+      }
+      .congrats-card.square-gallery{
         grid-template-columns:1fr;
       }
       .gallery{min-height:auto}
@@ -1013,7 +1033,7 @@
       },
       {
         name: "Юличка Васильна",
-        sideImage: "Юля1.png",
+        sideImage: "чибиЮля.png",
         title: "Поздравление от Юли",
         text: `Маринчо, отпускаю тебя с лёгким сердцем в новый захватывающий, волнующий этап!
 
@@ -1024,6 +1044,7 @@
 Цалую-абнимаю, к сердцу прижимаю!!! Будем ждать в гости!!`,
         signature: "Юля ♡",
         photos: ["Юля1.png", "Юля2.png", "Юля3.png", "Юля4.png"],
+        galleryMode: "square",
         quiz: {
           question: "По чему (кому) ты будешь больше всего скучать?",
           options: [
@@ -1418,6 +1439,7 @@
       }
 
       congratsCard.classList.toggle("single-horizontal", stage.galleryMode === "single-horizontal");
+      congratsCard.classList.toggle("square-gallery", stage.galleryMode === "square");
 
       renderPhoto();
       showScreen("congrats");
