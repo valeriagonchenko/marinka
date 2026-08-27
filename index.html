@@ -615,13 +615,16 @@
       min-height:auto;
     }
     .congrats-card.single-horizontal .photo-frame{
-      width:min(560px,100%);
-      aspect-ratio:16/10;
+      width:min(620px,100%);
+      aspect-ratio:4/3;
       border-radius:30px;
+      background:rgba(255,255,255,.88);
     }
     .congrats-card.single-horizontal .photo-frame img{
-      object-fit:cover;
+      object-fit:contain;
+      object-position:center;
       padding:0;
+      background:rgba(255,255,255,.88);
     }
 
     .congrats-card.square-gallery{
@@ -699,6 +702,86 @@
       color:#9a7684;
       font-weight:700;
     }
+    .answer.selected{
+      border-color:rgba(196,102,136,.72);
+      background:linear-gradient(145deg,#fff0f6,#fff8fb);
+      box-shadow:0 14px 30px rgba(182,93,126,.16);
+      transform:translateY(-1px);
+    }
+    .multi-note{
+      margin:4px 0 16px;
+      font-size:14px;
+      color:#946f7d;
+      font-weight:700;
+      line-height:1.6;
+      text-align:center;
+    }
+    .multi-submit-wrap{
+      display:flex;
+      justify-content:center;
+      margin-top:8px;
+    }
+    .congrats-card.dance-stage{
+      grid-template-columns:minmax(380px,480px) minmax(0,1fr);
+      gap:34px;
+    }
+    .congrats-card.dance-stage .gallery{
+      min-height:auto;
+    }
+    .congrats-card.dance-stage .photo-frame{
+      width:min(460px,100%);
+      aspect-ratio:1/1;
+      border-radius:32px;
+      background:linear-gradient(145deg,rgba(255,255,255,.95),rgba(255,243,248,.95));
+    }
+    .congrats-card.dance-stage .photo-frame img{
+      object-fit:contain;
+      padding:14px;
+      background:transparent;
+    }
+    .audio-greeting.music-mode{
+      padding:22px 22px 20px;
+      border-radius:28px;
+      background:linear-gradient(145deg,rgba(255,255,255,.92),rgba(255,238,245,.9));
+    }
+    .music-controls{
+      align-items:center;
+      gap:12px;
+      margin-bottom:12px;
+    }
+    .music-play-btn{
+      min-height:72px;
+      padding:18px 34px;
+      font-size:26px;
+      font-weight:900;
+      letter-spacing:.02em;
+      border-radius:999px;
+      box-shadow:0 16px 34px rgba(211,121,158,.34), inset 0 1px 0 rgba(255,255,255,.48);
+      background:linear-gradient(145deg,#f3a0bf,#d77ca1);
+    }
+    .music-pause-btn{
+      width:48px;
+      height:48px;
+      border:none;
+      border-radius:50%;
+      cursor:pointer;
+      font-size:20px;
+      font-weight:900;
+      color:#9c5572;
+      background:rgba(255,255,255,.94);
+      box-shadow:0 10px 20px rgba(121,71,91,.12);
+    }
+    .music-pause-btn:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+    }
+    .replay-audio-btn{
+      display:none;
+      margin-top:8px;
+    }
+    .replay-audio-btn.visible{
+      display:inline-flex;
+    }
 
     /* FINAL */
     #finalScreen{align-items:center;justify-content:center}
@@ -756,6 +839,9 @@
         grid-template-columns:1fr;
       }
       .congrats-card.square-gallery{
+        grid-template-columns:1fr;
+      }
+      .congrats-card.dance-stage{
         grid-template-columns:1fr;
       }
       .gallery{min-height:auto}
@@ -901,11 +987,13 @@
           <span class="signature" id="signature">Сергей ♡</span>
 
           <div class="audio-greeting" id="audioGreeting">
-            <div class="audio-label">Голосовое поздравление ♡</div>
-            <div class="audio-row">
-              <button class="btn btn-primary audio-btn" id="audioBtn">▶ Послушать Сергея</button>
-              <span class="audio-status" id="audioStatus">Нажми, чтобы включить</span>
+            <div class="audio-label" id="audioLabel">Музыкальный подарок ♡</div>
+            <div class="audio-row music-controls">
+              <button class="btn btn-primary audio-btn music-play-btn" id="audioBtn">▶ Play</button>
+              <button class="music-pause-btn" id="pauseBtn" type="button" aria-label="Пауза">⏸</button>
             </div>
+            <button class="btn btn-secondary replay-audio-btn" id="replayAudioBtn" type="button">Прослушать ещё раз</button>
+            <div class="audio-status" id="audioStatus">Нажми play, чтобы включить</div>
             <audio id="greetingAudio" preload="metadata"></audio>
           </div>
 
@@ -1111,6 +1199,33 @@
           question: "Крестики-нолики от Оли",
           subtitle: "Сыграй маленькую партию перед следующим пожеланием ♡"
         }
+      },
+      {
+        name: "Лера",
+        sideImage: "лератопчик.png",
+        title: "Главный хит Марины‑Меладзе",
+        text: `Финальный подарок готов ♡ Нажимай play и включай свой декретный хит‑парад!`,
+        signature: "Лера ♡",
+        photos: ["т1.png"],
+        galleryMode: "dance",
+        musicMode: true,
+        audio: "МАРИНКА УХОДИТ В ДЕКРЕТ.mp3",
+        audioLabel: "Музыкальный подарок ♡",
+        danceFrames: ["т1.png", "т2.png"],
+        quiz: {
+          type: "multi",
+          question: "Как звучал бы главный хит Марины‑Меладзе?",
+          subtitle: "Здесь правильные все варианты — выбери каждый, иначе дальше не пропустит ♡",
+          options: [
+            { text: "🎤 «СЭРЁЖААА, не тревожь мне душу…»" },
+            { text: "✨ «Красиво ты вошла в мой декрет»" },
+            { text: "☁️ «Небеса, заберите меня в Италию»" },
+            { text: "💔 «Притяженья больше нет… к рабочему чату»" },
+            { text: "🌊 «Океан и три реки… и ни одной срочной закупки»" }
+          ],
+          wrongFeedback: "Нужно выбрать все ответы — это же целый альбом хитов 😌",
+          correctFeedback: "Да! Абсолютно все песни достойны попасть в золотой фонд Марины‑Меладзе 😂"
+        }
       }
     ];
 
@@ -1127,6 +1242,9 @@
 
     let tttBoard = Array(9).fill("");
     let tttLocked = false;
+    let multiSelected = [];
+    let danceTimer = null;
+    let danceFrameIndex = 0;
 
     const totalStages = stages.length;
 
@@ -1158,8 +1276,11 @@
     const signature = document.getElementById("signature");
 
     const audioGreeting = document.getElementById("audioGreeting");
+    const audioLabel = document.getElementById("audioLabel");
     const greetingAudio = document.getElementById("greetingAudio");
     const audioBtn = document.getElementById("audioBtn");
+    const pauseBtn = document.getElementById("pauseBtn");
+    const replayAudioBtn = document.getElementById("replayAudioBtn");
     const audioStatus = document.getElementById("audioStatus");
 
     let galleryTimer = null;
@@ -1182,11 +1303,42 @@
       }, 3000);
     }
 
+    function stopDanceAnimation(resetFrame = true){
+      if(danceTimer){
+        clearInterval(danceTimer);
+        danceTimer = null;
+      }
+
+      const stage = stages[currentStage];
+      if(resetFrame && stage?.danceFrames?.length){
+        galleryImage.src = stage.danceFrames[0];
+      }
+    }
+
+    function startDanceAnimation(){
+      const stage = stages[currentStage];
+      if(!stage?.danceFrames?.length) return;
+
+      stopDanceAnimation(false);
+      danceFrameIndex = 0;
+      galleryImage.src = stage.danceFrames[0];
+
+      if(stage.danceFrames.length < 2) return;
+
+      danceTimer = setInterval(() => {
+        danceFrameIndex = (danceFrameIndex + 1) % stage.danceFrames.length;
+        galleryImage.src = stage.danceFrames[danceFrameIndex];
+      }, 1000);
+    }
+
     function stopGreetingAudio(){
+      stopDanceAnimation(true);
       greetingAudio.pause();
       greetingAudio.currentTime = 0;
-      audioBtn.textContent = `▶ Послушать ${stages[currentStage]?.name || "поздравление"}`;
-      audioStatus.textContent = "Нажми, чтобы включить";
+      audioBtn.textContent = "▶ Play";
+      audioStatus.textContent = "Нажми play, чтобы включить";
+      pauseBtn.disabled = true;
+      replayAudioBtn.classList.remove("visible");
     }
 
     function showCongratsButton(){
@@ -1250,6 +1402,35 @@
         return;
       }
 
+      if(quiz.type === "multi"){
+        answerList.className = "answers";
+        multiSelected = Array(quiz.options.length).fill(false);
+
+        if(quiz.subtitle){
+          const note = document.createElement("div");
+          note.className = "multi-note";
+          note.textContent = quiz.subtitle;
+          answerList.appendChild(note);
+        }
+
+        quiz.options.forEach((option, index) => {
+          const button = document.createElement("button");
+          button.className = "answer";
+          button.dataset.answer = index;
+          button.innerHTML = `<span class="num">${index + 1}</span><span>${option.text}</span>`;
+          button.addEventListener("click", () => toggleMultiAnswer(button, index));
+          answerList.appendChild(button);
+        });
+
+        const submitWrap = document.createElement("div");
+        submitWrap.className = "multi-submit-wrap";
+        submitWrap.innerHTML = `<button class="btn btn-primary" id="multiSubmitBtn">Проверить ответы</button>`;
+        answerList.appendChild(submitWrap);
+
+        document.getElementById("multiSubmitBtn").addEventListener("click", checkMultiAnswer);
+        return;
+      }
+
       answerList.className = "answers" + (quiz.type === "image" ? " image-answers" : "");
 
       quiz.options.forEach((option, index) => {
@@ -1279,6 +1460,30 @@
         button.addEventListener("click", () => handleAnswer(button, index));
         answerList.appendChild(button);
       });
+    }
+
+    function toggleMultiAnswer(button, index){
+      multiSelected[index] = !multiSelected[index];
+      button.classList.toggle("selected", multiSelected[index]);
+      feedback.textContent = "Нужно выбрать все варианты — иначе концерт не начнётся ♡";
+    }
+
+    function checkMultiAnswer(){
+      const quiz = stages[currentStage].quiz;
+      const allSelected = multiSelected.length === quiz.options.length && multiSelected.every(Boolean);
+
+      if(!allSelected){
+        feedback.textContent = quiz.wrongFeedback || "Нужно выбрать все ответы 😌";
+        return;
+      }
+
+      feedback.textContent = quiz.correctFeedback || "Все ответы выбраны правильно ♡";
+      answerList.querySelectorAll(".answer").forEach(btn => btn.disabled = true);
+
+      const submitBtn = document.getElementById("multiSubmitBtn");
+      if(submitBtn) submitBtn.disabled = true;
+
+      showCongratsButton();
     }
 
     function tttWin(board, mark){
@@ -1458,17 +1663,23 @@
 
       if(stage.audio){
         audioGreeting.classList.add("visible");
+        audioGreeting.classList.toggle("music-mode", Boolean(stage.musicMode));
         greetingAudio.src = stage.audio;
-        audioBtn.textContent = `▶ Послушать ${stage.name}`;
-        audioStatus.textContent = "Нажми, чтобы включить";
+        audioLabel.textContent = stage.audioLabel || "Музыкальный подарок ♡";
+        audioBtn.textContent = "▶ Play";
+        audioStatus.textContent = "Нажми play, чтобы включить";
+        pauseBtn.disabled = true;
+        replayAudioBtn.classList.remove("visible");
       }else{
         audioGreeting.classList.remove("visible");
+        audioGreeting.classList.remove("music-mode");
         greetingAudio.removeAttribute("src");
         greetingAudio.load();
       }
 
       congratsCard.classList.toggle("single-horizontal", stage.galleryMode === "single-horizontal");
       congratsCard.classList.toggle("square-gallery", stage.galleryMode === "square");
+      congratsCard.classList.toggle("dance-stage", stage.galleryMode === "dance");
 
       renderPhoto();
       showScreen("congrats");
@@ -1485,7 +1696,7 @@
       const photos = stage.photos || ["marina_chibi.png"];
       const src = photos[currentPhoto] || "marina_chibi.png";
 
-      galleryControls.classList.toggle("hidden", photos.length <= 1);
+      galleryControls.classList.toggle("hidden", photos.length <= 1 || stage.galleryMode === "dance");
 
       galleryImage.style.opacity = "0";
       setTimeout(() => {
@@ -1550,32 +1761,47 @@
 
     audioBtn.addEventListener("click", async () => {
       try{
-        if(greetingAudio.paused){
-          await greetingAudio.play();
-        }else{
-          greetingAudio.pause();
-        }
+        await greetingAudio.play();
       }catch(error){
-        audioStatus.textContent = "Не удалось запустить аудио. Проверь файл ";
+        audioStatus.textContent = "Не удалось запустить аудио. Проверь файл.";
+      }
+    });
+
+    pauseBtn.addEventListener("click", () => {
+      greetingAudio.pause();
+    });
+
+    replayAudioBtn.addEventListener("click", async () => {
+      try{
+        greetingAudio.currentTime = 0;
+        replayAudioBtn.classList.remove("visible");
+        await greetingAudio.play();
+      }catch(error){
+        audioStatus.textContent = "Не удалось запустить аудио. Проверь файл.";
       }
     });
 
     greetingAudio.addEventListener("play", () => {
-      audioBtn.textContent = "❚❚ Пауза";
-      audioStatus.textContent = "Сергей говорит… ♡";
+      audioStatus.textContent = "Сейчас играет главный хит ♡";
+      pauseBtn.disabled = false;
+      replayAudioBtn.classList.remove("visible");
+      startDanceAnimation();
     });
 
     greetingAudio.addEventListener("pause", () => {
-      if(greetingAudio.currentTime > 0 && !greetingAudio.ended){
-        audioBtn.textContent = "▶ Продолжить";
+      if(!greetingAudio.ended && greetingAudio.currentTime > 0){
         audioStatus.textContent = "На паузе";
       }
+      pauseBtn.disabled = true;
+      stopDanceAnimation(true);
     });
 
     greetingAudio.addEventListener("ended", () => {
-      audioBtn.textContent = "↻ Послушать ещё раз";
-      audioStatus.textContent = "Поздравление прослушано ♡";
+      audioStatus.textContent = "Песня закончилась ♡";
       greetingAudio.currentTime = 0;
+      pauseBtn.disabled = true;
+      replayAudioBtn.classList.add("visible");
+      stopDanceAnimation(true);
     });
 
     document.getElementById("nextStageBtn").addEventListener("click", () => {
