@@ -592,6 +592,27 @@
       border-radius:999px;
       box-shadow:0 10px 22px rgba(121,71,91,.12);
     }
+
+    .gallery-controls.hidden{
+      display:none;
+    }
+
+    .congrats-card.single-horizontal{
+      grid-template-columns:minmax(420px,1fr) minmax(0,1.12fr);
+      gap:34px;
+    }
+    .congrats-card.single-horizontal .gallery{
+      min-height:auto;
+    }
+    .congrats-card.single-horizontal .photo-frame{
+      width:min(560px,100%);
+      aspect-ratio:16/10;
+      border-radius:30px;
+    }
+    .congrats-card.single-horizontal .photo-frame img{
+      object-fit:cover;
+      padding:0;
+    }
     .gallery-btn{
       border:0;background:transparent;cursor:pointer;
       width:30px;height:30px;border-radius:50%;
@@ -703,6 +724,9 @@
       .congrats-card{
         grid-template-columns:1fr;
         padding:24px;
+      }
+      .congrats-card.single-horizontal{
+        grid-template-columns:1fr;
       }
       .gallery{min-height:auto}
       .photo-frame{max-height:470px}
@@ -940,7 +964,7 @@
 
 А еще я хочу поблагодарить тебя за всё то, чему ты меня научила. Всегда меня поражало, как ты умеешь всё делать так чётко! Ты классная! Спасибо ☺️ Я буду скучать по тебе.`,
         signature: "Даша ♡",
-        photos: ["даша.png"],
+        photos: ["дашамарина.jpg"],
         quiz: {
           question: "О чём думает Даша чаще всего на работе?",
           type: "image",
@@ -959,7 +983,7 @@
       },
       {
         name: "Оксана",
-        sideImage: "ФотоОксана.jpg",
+        sideImage: "чибиОксана.png",
         title: "Поздравление от Оксаны",
         text: `Дорогая, Мариночка!!! Поздравляю тебя с предстоящим Самым Радостным Событием в вашей семье!!!!
 
@@ -974,6 +998,7 @@
 Желаю хорошенько отдохнуть и всегда помнить, что Счастливая мама — Счастливая семья!!!!!`,
         signature: "Оксана ♡",
         photos: ["ФотоОксана.jpg"],
+        galleryMode: "single-horizontal",
         quiz: {
           question: "Если растерялся и не знаешь, что делать с ребёнком?!!!",
           options: [
@@ -1087,6 +1112,8 @@
 
     const galleryImage = document.getElementById("galleryImage");
     const galleryDots = document.getElementById("galleryDots");
+    const galleryControls = document.querySelector(".gallery-controls");
+    const congratsCard = document.querySelector(".congrats-card");
 
     const congratsTitle = document.getElementById("congratsTitle");
     const congratsText = document.getElementById("congratsText");
@@ -1390,15 +1417,24 @@
         greetingAudio.load();
       }
 
+      congratsCard.classList.toggle("single-horizontal", stage.galleryMode === "single-horizontal");
+
       renderPhoto();
       showScreen("congrats");
-      startGalleryAutoplay();
+
+      if((stage.photos || []).length > 1){
+        startGalleryAutoplay();
+      }else{
+        stopGalleryAutoplay();
+      }
     }
 
     function renderPhoto(){
       const stage = stages[currentStage];
-      const photos = stage.photos;
+      const photos = stage.photos || ["marina_chibi.png"];
       const src = photos[currentPhoto] || "marina_chibi.png";
+
+      galleryControls.classList.toggle("hidden", photos.length <= 1);
 
       galleryImage.style.opacity = "0";
       setTimeout(() => {
@@ -1444,14 +1480,16 @@
     });
 
     document.getElementById("prevPhoto").addEventListener("click", () => {
-      const photos = stages[currentStage].photos;
+      const photos = stages[currentStage].photos || [];
+      if(photos.length <= 1) return;
       currentPhoto = (currentPhoto - 1 + photos.length) % photos.length;
       renderPhoto();
       startGalleryAutoplay();
     });
 
     document.getElementById("nextPhoto").addEventListener("click", () => {
-      const photos = stages[currentStage].photos;
+      const photos = stages[currentStage].photos || [];
+      if(photos.length <= 1) return;
       currentPhoto = (currentPhoto + 1) % photos.length;
       renderPhoto();
       startGalleryAutoplay();
