@@ -403,12 +403,12 @@
     .answer-reveal.visible{display:block}
     .answer-reveal img{
       display:block;
-      width:min(560px,96%);
-      max-height:520px;
+      width:min(350px,100%);
+      max-height:330px;
       object-fit:contain;
-      margin:0 auto 18px;
+      margin:0 auto 14px;
       border-radius:28px;
-      background:rgba(255,255,255,.5);
+      background:rgba(255,255,255,.62);
       box-shadow:0 16px 38px rgba(121,71,91,.12);
     }
     .answer-reveal-text{
@@ -416,7 +416,6 @@
       font-size:30px;
       font-weight:700;
       color:#a65e79;
-      margin-bottom:20px;
     }
 
     /* CONGRATS */
@@ -450,8 +449,7 @@
     }
     .photo-frame img{
       width:100%;height:100%;
-      object-fit:contain;
-      padding:10px;
+      object-fit:cover;
       background:linear-gradient(180deg,#fff8fa,#f7e5eb);
       transition:opacity .28s ease, transform .5s ease;
     }
@@ -689,7 +687,6 @@
           <div class="answer-reveal" id="answerReveal">
             <img id="answerRevealImage" src="" alt="">
             <div class="answer-reveal-text" id="answerRevealText"></div>
-            <button class="btn btn-primary" id="revealContinueBtn">Перейти к пожеланиям →</button>
           </div>
         </div>
       </div>
@@ -704,7 +701,7 @@
             <img id="galleryImage" src="marina_chibi.png" alt="Фото Сергея и Марины">
           </div>
 
-          <div class="gallery-controls" id="galleryControls">
+          <div class="gallery-controls">
             <button class="gallery-btn" id="prevPhoto" aria-label="Предыдущее фото">‹</button>
             <span id="galleryDots" style="display:flex;align-items:center;gap:9px;"></span>
             <button class="gallery-btn" id="nextPhoto" aria-label="Следующее фото">›</button>
@@ -771,12 +768,9 @@
       - photos      — массив совместных фото
       - audio       — голосовое поздравление (если есть)
 
-      Фото в поздравлении перелистываются автоматически каждые 3 секунды
-      (если фото несколько — если фото всего одно, стрелки/точки скрываются
-      и автолистание не запускается).
+      Фото в поздравлении перелистываются автоматически каждые 3 секунды.
       У каждого этапа теперь может быть свой вопрос и свои варианты ответа.
-      Второй этап — отдельный вопрос про Дашу и ослика, после правильного
-      ответа показывается крупная картинка и кнопка "Перейти к пожеланиям".
+      Второй этап — отдельный вопрос про Дашу и ослика.
     */
 
     const stages = [
@@ -825,12 +819,13 @@
           correct: 2,
           wrongFeedback: "Да, но о чём-то думает ещё чаще! 😌",
           correctFeedback: "Ну конечно. ОСЛИК ♡",
-          revealImage: "даша и ослик.png"
+          revealImage: "даша и ослик.png",
+          revealDelay: 4200
         }
       },
       {
         name: "Оксана",
-        sideImage: "чибиОксана.png",
+        sideImage: "ФотоОксана.jpg",
         title: "Поздравление от Оксаны",
         text: `Дорогая, Мариночка!!! Поздравляю тебя с предстоящим Самым Радостным Событием в вашей семье!!!!
 
@@ -859,7 +854,7 @@
       },
       {
         name: "Юличка Васильна",
-        sideImage: "чибиЮля.png",
+        sideImage: "Юля1.png",
         title: "Поздравление от Юли",
         text: `Маринчо, отпускаю тебя с лёгким сердцем в новый захватывающий, волнующий этап!
 
@@ -946,11 +941,9 @@
     const answerReveal = document.getElementById("answerReveal");
     const answerRevealImage = document.getElementById("answerRevealImage");
     const answerRevealText = document.getElementById("answerRevealText");
-    const revealContinueBtn = document.getElementById("revealContinueBtn");
 
     const galleryImage = document.getElementById("galleryImage");
     const galleryDots = document.getElementById("galleryDots");
-    const galleryControls = document.getElementById("galleryControls");
 
     const congratsTitle = document.getElementById("congratsTitle");
     const congratsText = document.getElementById("congratsText");
@@ -1060,8 +1053,6 @@
         answerList.querySelectorAll(".answer").forEach(btn => btn.disabled = true);
 
         if(quiz.revealImage){
-          // Показываем крупную картинку-ответ и ждём, пока пользователь
-          // сам нажмёт кнопку "Перейти к пожеланиям" — без автотаймера.
           answerList.style.display = "none";
           feedback.textContent = "";
 
@@ -1070,10 +1061,10 @@
           answerRevealText.textContent = quiz.correctFeedback || "";
           answerReveal.classList.add("visible");
 
-          revealContinueBtn.onclick = () => {
+          setTimeout(() => {
             answerList.style.display = "";
             openCongrats();
-          };
+          }, quiz.revealDelay || 2200);
         }else{
           setTimeout(openCongrats, 650);
         }
@@ -1124,9 +1115,6 @@
         galleryImage.classList.toggle("chibi-photo", src.includes("marina_chibi"));
         galleryImage.style.opacity = "1";
       }, 120);
-
-      // Если фото всего одно — стрелки и точки листания не нужны.
-      galleryControls.style.display = photos.length <= 1 ? "none" : "flex";
 
       galleryDots.innerHTML = "";
       photos.forEach((_, index) => {
