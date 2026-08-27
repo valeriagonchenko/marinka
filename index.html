@@ -476,6 +476,16 @@
       color:#a65e79;
     }
 
+    .after-question-action{
+      display:none;
+      margin-top:20px;
+      justify-content:center;
+      animation:fadeIn .28s ease both;
+    }
+    .after-question-action.visible{
+      display:flex;
+    }
+
     .reveal-overlay{
       position:fixed;
       inset:0;
@@ -854,6 +864,10 @@
             <img id="answerRevealImage" src="" alt="">
             <div class="answer-reveal-text" id="answerRevealText"></div>
           </div>
+
+          <div class="after-question-action" id="afterQuestionAction">
+            <button class="btn btn-primary" id="goToCongratsBtn">Перейти к пожеланиям</button>
+          </div>
         </div>
       </div>
     </section>
@@ -1065,6 +1079,7 @@
         text: `Ярких эмоций и позитивных впечатлений, радостных моментов и феерических событий, абсолютного счастья и полнейшей гармонии!!!`,
         signature: "Сергей ♡",
         photos: ["ПОСТСДАЛ.png"],
+        galleryMode: "single-horizontal",
         quiz: {
           question: "Как бы для себя любимой добавить сейчас ещё капельку счастья?",
           options: [
@@ -1125,6 +1140,8 @@
     const answerReveal = document.getElementById("answerReveal");
     const answerRevealImage = document.getElementById("answerRevealImage");
     const answerRevealText = document.getElementById("answerRevealText");
+    const afterQuestionAction = document.getElementById("afterQuestionAction");
+    const goToCongratsBtn = document.getElementById("goToCongratsBtn");
 
     const revealOverlay = document.getElementById("revealOverlay");
     const overlayRevealImage = document.getElementById("overlayRevealImage");
@@ -1172,6 +1189,21 @@
       audioStatus.textContent = "Нажми, чтобы включить";
     }
 
+    function showCongratsButton(){
+      afterQuestionAction.classList.add("visible");
+    }
+
+    function hideCongratsButton(){
+      afterQuestionAction.classList.remove("visible");
+    }
+
+    function proceedToCongrats(){
+      hideCongratsButton();
+      answerList.style.display = "";
+      answerReveal.classList.remove("visible");
+      openCongrats();
+    }
+
     function showScreen(name){
       if(name !== "congrats"){
         stopGalleryAutoplay();
@@ -1204,6 +1236,7 @@
       answerReveal.classList.remove("visible");
       answerRevealImage.src = "";
       answerRevealText.textContent = "";
+      hideCongratsButton();
 
       revealOverlay.classList.remove("visible");
       revealOverlay.setAttribute("aria-hidden","true");
@@ -1290,6 +1323,7 @@
       document.getElementById("tttReplayBtn").addEventListener("click", () => {
         startTttGame(subtitle);
         feedback.textContent = "";
+        hideCongratsButton();
       });
 
       renderTttBoard();
@@ -1305,7 +1339,7 @@
         tttLocked = true;
         renderTttBoard();
         feedback.textContent = "Победа! Оля официально пропускает тебя дальше ♡";
-        setTimeout(openCongrats, 900);
+        showCongratsButton();
         return;
       }
 
@@ -1313,7 +1347,7 @@
         feedback.textContent = "Ничья! Но это праздничная версия — засчитываем победу ♡";
         tttLocked = true;
         renderTttBoard();
-        setTimeout(openCongrats, 1100);
+        showCongratsButton();
         return;
       }
 
@@ -1358,7 +1392,7 @@
         tttLocked = true;
         feedback.textContent = "Ничья! Но праздничная комиссия засчитывает её как победу ♡";
         renderTttBoard();
-        setTimeout(openCongrats, 1100);
+        showCongratsButton();
         return;
       }
 
@@ -1398,14 +1432,9 @@
 
           answerRevealText.textContent = quiz.revealText || quiz.correctFeedback || "";
           answerReveal.classList.add("visible");
-
-          setTimeout(() => {
-            answerList.style.display = "";
-            answerRevealImage.style.display = "block";
-            openCongrats();
-          }, quiz.revealDelay || 2200);
+          showCongratsButton();
         }else{
-          setTimeout(openCongrats, 650);
+          showCongratsButton();
         }
       }else{
         button.classList.remove("wrong");
@@ -1500,6 +1529,8 @@
       revealOverlay.setAttribute("aria-hidden","true");
       openCongrats();
     });
+
+    goToCongratsBtn.addEventListener("click", proceedToCongrats);
 
     document.getElementById("prevPhoto").addEventListener("click", () => {
       const photos = stages[currentStage].photos || [];
