@@ -805,8 +805,10 @@
         name: "Даша",
         sideImage: "даша.png",
         title: "Поздравление от Даши",
-        text: "",
-        signature: "",
+        text: `Марина, я хочу пожелать крепкого здоровья тебе и твоей малышке. Пусть ваша встреча произойдет легко и принесет много счастья. Я уверена, вы будете проводить самое классное время.
+
+А еще я хочу поблагодарить тебя за всё то, чему ты меня научила. Всегда меня поражало, как ты умеешь всё делать так чётко! Ты классная! Спасибо ☺️ Я буду скучать по тебе.`,
+        signature: "Даша ♡",
         photos: ["даша.png"],
         quiz: {
           question: "О чём думает Даша чаще всего на работе?",
@@ -879,22 +881,29 @@
         }
       },
       {
-        name: "Коллега 4",
-        sideImage: "marina_chibi.png",
-        title: "Поздравление",
-        text: "Здесь будет следующий текст поздравления.",
-        signature: "С любовью ♡",
-        photos: ["marina_chibi.png"],
+        name: "Сергей",
+        sideImage: "чибиСергей.png",
+        title: "Пожелание от Сергея",
+        text: `Ярких эмоций и позитивных впечатлений, радостных моментов и феерических событий, абсолютного счастья и полнейшей гармонии!!!`,
+        signature: "Сергей ♡",
+        photos: ["ПОСТСДАЛ.png"],
         quiz: {
-          question: "Что обязательно нужно сделать, если вдруг освободилась хоть одна минуточка?",
+          question: "Как бы для себя любимой добавить сейчас ещё капельку счастья?",
           options: [
-            { text: "Ещё немного поработать" },
-            { text: "Съесть конфету" },
-            { text: "Сказать «СЕРЕЖААААААА!»" }
+            { text: "☕ Спокойно выпить вкусный кофе — и чтобы никто не дёргал" },
+            { text: "🪂 Прыжок с парашютом. А почему бы, собственно, и ДА?" },
+            { text: "📋 Срочно кого-нибудь чем-нибудь озадачить — иначе что это за отдых?" },
+            { text: "🛋 Диван, сериальчик, Буся рядом — вот теперь хорошо" },
+            { text: "✈️ Психануть и рвануть в Италию: вино, сыр и никаких рабочих чатов" }
           ],
           correct: 2,
-          wrongFeedback: "Мы сделаем вид, что этого ответа не было. Попробуй ещё раз 😌",
-          correctFeedback: "ДАААА! Всё по классике ♡"
+          wrongFeedback: "Звучит прекрасно… но сегодня счастье выбрало другой путь 😏",
+          correctFeedback: "Ну конечно! 😂",
+          revealText: `Ну конечно! 😂
+
+Сергей не мог отпустить тебя в декрет, не убедившись, что главный навык руководителя закупок на месте:
+кого-нибудь найти → чем-нибудь озадачить → спокойно жить дальше.`,
+          revealDelay: 4200
         }
       },
       {
@@ -1052,17 +1061,26 @@
         feedback.textContent = quiz.correctFeedback || "Правильно ♡";
         answerList.querySelectorAll(".answer").forEach(btn => btn.disabled = true);
 
-        if(quiz.revealImage){
+        if(quiz.revealImage || quiz.revealText){
           answerList.style.display = "none";
           feedback.textContent = "";
 
-          answerRevealImage.src = quiz.revealImage;
-          answerRevealImage.alt = quiz.correctFeedback || "Правильный ответ";
-          answerRevealText.textContent = quiz.correctFeedback || "";
+          if(quiz.revealImage){
+            answerRevealImage.style.display = "block";
+            answerRevealImage.src = quiz.revealImage;
+            answerRevealImage.alt = (quiz.revealText || quiz.correctFeedback || "Правильный ответ");
+          }else{
+            answerRevealImage.style.display = "none";
+            answerRevealImage.removeAttribute("src");
+            answerRevealImage.alt = "";
+          }
+
+          answerRevealText.textContent = quiz.revealText || quiz.correctFeedback || "";
           answerReveal.classList.add("visible");
 
           setTimeout(() => {
             answerList.style.display = "";
+            answerRevealImage.style.display = "block";
             openCongrats();
           }, quiz.revealDelay || 2200);
         }else{
