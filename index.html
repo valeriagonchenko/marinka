@@ -1282,6 +1282,7 @@
     const pauseBtn = document.getElementById("pauseBtn");
     const replayAudioBtn = document.getElementById("replayAudioBtn");
     const audioStatus = document.getElementById("audioStatus");
+    const backgroundMusic = document.getElementById("backgroundMusic");
 
     let galleryTimer = null;
 
@@ -1302,6 +1303,38 @@
         renderPhoto();
       }, 3000);
     }
+
+    backgroundMusic.volume = 0.32;
+
+    async function startBackgroundMusic(){
+      if(!greetingAudio.paused) return;
+
+      try{
+        await backgroundMusic.play();
+      }catch(error){
+        // Браузер может блокировать звук без первого действия пользователя.
+        // В этом случае музыка запустится при первом клике/тапе/нажатии клавиши.
+      }
+    }
+
+    function pauseBackgroundMusic(){
+      backgroundMusic.pause();
+    }
+
+    function enableBackgroundMusicAfterInteraction(){
+      startBackgroundMusic();
+      document.removeEventListener("pointerdown", enableBackgroundMusicAfterInteraction);
+      document.removeEventListener("keydown", enableBackgroundMusicAfterInteraction);
+      document.removeEventListener("touchstart", enableBackgroundMusicAfterInteraction);
+    }
+
+    // Пытаемся запустить музыку сразу при открытии страницы.
+    startBackgroundMusic();
+
+    // Fallback для браузеров, которые запрещают autoplay со звуком.
+    document.addEventListener("pointerdown", enableBackgroundMusicAfterInteraction, {once:true});
+    document.addEventListener("keydown", enableBackgroundMusicAfterInteraction, {once:true});
+    document.addEventListener("touchstart", enableBackgroundMusicAfterInteraction, {once:true});
 
     function stopDanceAnimation(resetFrame = true){
       if(danceTimer){
@@ -1782,6 +1815,7 @@
     });
 
     greetingAudio.addEventListener("play", () => {
+      pauseBackgroundMusic();
       audioStatus.textContent = "Сейчас играет главный хит ♡";
       pauseBtn.disabled = false;
       replayAudioBtn.classList.remove("visible");
@@ -1794,6 +1828,7 @@
       }
       pauseBtn.disabled = true;
       stopDanceAnimation(true);
+      startBackgroundMusic();
     });
 
     greetingAudio.addEventListener("ended", () => {
@@ -1802,6 +1837,7 @@
       pauseBtn.disabled = true;
       replayAudioBtn.classList.add("visible");
       stopDanceAnimation(true);
+      startBackgroundMusic();
     });
 
     document.getElementById("nextStageBtn").addEventListener("click", () => {
@@ -1821,5 +1857,8 @@
       showScreen("start");
     });
   </script>
+
+  <!-- Фоновая музыка игры -->
+  <audio id="backgroundMusic" src="wayne-jones-touching-moment.mp3" preload="auto" loop></audio>
 </body>
 </html>
