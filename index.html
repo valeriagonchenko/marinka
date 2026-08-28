@@ -144,11 +144,13 @@
       padding:14px 28px;
       cursor:pointer;
       font-weight:800;
-      transition:.18s ease;
+      transition:transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s ease;
       box-shadow:0 10px 22px rgba(176,98,126,.18);
     }
-    .btn:hover{transform:translateY(-2px)}
-    .btn:active{transform:translateY(0)}
+    @media(hover:hover) and (pointer:fine){
+      .btn:hover{transform:translateY(-3px) scale(1.035);box-shadow:0 16px 30px rgba(176,98,126,.26)}
+    }
+    .btn:active{transform:translateY(0) scale(.94)}
     .btn-primary{
       background:linear-gradient(135deg,#d988a4,#c9718e);
       color:white;
@@ -319,16 +321,30 @@
       cursor:pointer;
       font-size:17px;
       font-weight:700;
-      transition:.18s ease;
+      transition:transform .16s cubic-bezier(.34,1.56,.64,1), border-color .16s ease, background .16s ease, box-shadow .16s ease;
       display:flex;
       align-items:center;
       gap:14px;
+      animation:answerPop .42s cubic-bezier(.22,1,.36,1) both;
     }
-    .answer:hover{
-      transform:translateX(4px);
-      border-color:rgba(199,105,139,.5);
-      background:#fff;
+    .answers .answer:nth-child(1){animation-delay:.03s}
+    .answers .answer:nth-child(2){animation-delay:.09s}
+    .answers .answer:nth-child(3){animation-delay:.15s}
+    .answers .answer:nth-child(4){animation-delay:.21s}
+    .answers .answer:nth-child(5){animation-delay:.27s}
+    @keyframes answerPop{
+      from{opacity:0;transform:translateY(16px) scale(.94)}
+      to{opacity:1;transform:none}
     }
+    @media(hover:hover) and (pointer:fine){
+      .answer:hover{
+        transform:translateX(4px) scale(1.02);
+        border-color:rgba(199,105,139,.5);
+        background:#fff;
+        box-shadow:0 14px 28px rgba(176,98,126,.14);
+      }
+    }
+    .answer:active{transform:scale(.96)}
     .answer .num{
       flex:0 0 34px;
       width:34px;height:34px;
@@ -390,11 +406,14 @@
       transition:.16s ease;
       box-shadow:inset 0 0 0 1px rgba(255,255,255,.85);
     }
-    .ttt-cell:hover:not(:disabled){
-      transform:translateY(-2px);
-      background:#fff0f5;
-      border-color:rgba(190,104,136,.42);
+    @media(hover:hover) and (pointer:fine){
+      .ttt-cell:hover:not(:disabled){
+        transform:translateY(-2px) scale(1.04);
+        background:#fff0f5;
+        border-color:rgba(190,104,136,.42);
+      }
     }
+    .ttt-cell:active:not(:disabled){transform:scale(.92)}
     .ttt-cell:disabled{cursor:default}
     .ttt-cell.player{
       color:#c86689;
@@ -647,12 +666,20 @@
       border:0;background:transparent;cursor:pointer;
       width:30px;height:30px;border-radius:50%;
       color:#b66e88;font-weight:900;
+      transition:transform .16s cubic-bezier(.34,1.56,.64,1), background .16s ease;
     }
+    @media(hover:hover) and (pointer:fine){
+      .gallery-btn:hover{background:rgba(216,124,158,.14);transform:scale(1.15)}
+    }
+    .gallery-btn:active{transform:scale(.85)}
     .dot{
       width:7px;height:7px;border-radius:50%;
       background:#e7c9d4;
+      cursor:pointer;
+      transition:transform .16s ease, background .16s ease;
     }
-    .dot.active{background:#c87995}
+    .dot.active{background:#c87995;transform:scale(1.3)}
+    .dot:hover{transform:scale(1.25)}
 
     .congrats-copy{padding:14px 20px 14px 0}
     .congrats-copy p{
@@ -849,6 +876,15 @@
       .congrats-copy{text-align:center;padding:10px 10px 18px}
     }
 
+    #confettiCanvas{
+      position:fixed;
+      inset:0;
+      width:100%;
+      height:100%;
+      pointer-events:none;
+      z-index:1200;
+    }
+
     @media(max-width:560px){
       h1{font-size:54px}
       h2{font-size:42px}
@@ -1035,6 +1071,9 @@
 
   <!-- Фоновая музыка игры: элемент должен существовать до запуска JS -->
   <audio id="backgroundMusic" src="wayne-jones-touching-moment.mp3" preload="auto" loop></audio>
+
+  <!-- Канвас для конфетти при правильных ответах -->
+  <canvas id="confettiCanvas"></canvas>
 
   <script>
     /*
@@ -1261,6 +1300,140 @@
     }
 
     preloadStageImages();
+
+    // --- Конфетти ---
+    const confettiCanvas = document.getElementById("confettiCanvas");
+    const confettiCtx = confettiCanvas.getContext("2d");
+    let confettiParticles = [];
+    let confettiAnimating = false;
+
+    function resizeConfettiCanvas(){
+      confettiCanvas.width = window.innerWidth;
+      confettiCanvas.height = window.innerHeight;
+    }
+    resizeConfettiCanvas();
+    window.addEventListener("resize", resizeConfettiCanvas);
+
+    const confettiColors = ["#e5a1b8","#d57f9e","#f3c1d1","#ffd66b","#ffffff","#c9718e"];
+
+    function launchConfetti(originX, originY, count = 90){
+      const cx = originX ?? confettiCanvas.width / 2;
+      const cy = originY ?? confettiCanvas.height * 0.28;
+
+      for(let i = 0; i < count; i++){
+        confettiParticles.push({
+          x: cx,
+          y: cy,
+          vx: (Math.random() - 0.5) * 9,
+          vy: Math.random() * -9 - 3,
+          size: Math.random() * 7 + 4,
+          color: confettiColors[Math.floor(Math.random() * confettiColors.length)],
+          rotation: Math.random() * 360,
+          rotationSpeed: (Math.random() - 0.5) * 14,
+          shape: Math.random() > 0.5 ? "rect" : "circle",
+          life: 0,
+          maxLife: 90 + Math.random() * 40
+        });
+      }
+
+      if(!confettiAnimating){
+        confettiAnimating = true;
+        requestAnimationFrame(animateConfetti);
+      }
+    }
+
+    function animateConfetti(){
+      confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+
+      confettiParticles.forEach(p => {
+        p.vy += 0.22;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rotation += p.rotationSpeed;
+        p.life++;
+
+        confettiCtx.save();
+        confettiCtx.translate(p.x, p.y);
+        confettiCtx.rotate((p.rotation * Math.PI) / 180);
+        confettiCtx.globalAlpha = Math.max(0, 1 - p.life / p.maxLife);
+        confettiCtx.fillStyle = p.color;
+
+        if(p.shape === "rect"){
+          confettiCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+        }else{
+          confettiCtx.beginPath();
+          confettiCtx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+          confettiCtx.fill();
+        }
+
+        confettiCtx.restore();
+      });
+
+      confettiParticles = confettiParticles.filter(p => p.life < p.maxLife && p.y < confettiCanvas.height + 60);
+
+      if(confettiParticles.length){
+        requestAnimationFrame(animateConfetti);
+      }else{
+        confettiAnimating = false;
+        confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      }
+    }
+
+    // --- Звуковые эффекты (синтезируются на лету, файлы не нужны) ---
+    let sfxCtx = null;
+
+    function getSfxCtx(){
+      if(!sfxCtx){
+        sfxCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if(sfxCtx.state === "suspended"){
+        sfxCtx.resume();
+      }
+      return sfxCtx;
+    }
+
+    function playTone(freq, duration, type = "sine", startTime = 0, volume = 0.16){
+      try{
+        const ctx = getSfxCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = type;
+        osc.frequency.value = freq;
+
+        gain.gain.setValueAtTime(volume, ctx.currentTime + startTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + startTime + duration);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(ctx.currentTime + startTime);
+        osc.stop(ctx.currentTime + startTime + duration + 0.03);
+      }catch(error){
+        // Web Audio может быть недоступен — тогда просто без звука.
+      }
+    }
+
+    function playClickSound(){
+      playTone(760, 0.05, "sine", 0, 0.1);
+    }
+
+    function playCorrectSound(){
+      playTone(523.25, 0.14, "sine", 0, 0.16);
+      playTone(659.25, 0.16, "sine", 0.1, 0.16);
+      playTone(783.99, 0.24, "sine", 0.2, 0.18);
+    }
+
+    function playWrongSound(){
+      playTone(220, 0.18, "sawtooth", 0, 0.12);
+      playTone(174, 0.24, "sawtooth", 0.12, 0.1);
+    }
+
+    // Лёгкий звук клика на любой кнопке в игре
+    document.addEventListener("click", event => {
+      const target = event.target.closest("button");
+      if(target) playClickSound();
+    });
 
     const screens = {
       start: document.getElementById("startScreen"),
@@ -1539,10 +1712,13 @@
       const allSelected = multiSelected.length === quiz.options.length && multiSelected.every(Boolean);
 
       if(!allSelected){
+        playWrongSound();
         feedback.textContent = quiz.wrongFeedback || "Нужно выбрать все ответы 😌";
         return;
       }
 
+      playCorrectSound();
+      launchConfetti();
       feedback.textContent = quiz.correctFeedback || "Все ответы выбраны правильно ♡";
       answerList.querySelectorAll(".answer").forEach(btn => btn.disabled = true);
 
@@ -1609,12 +1785,16 @@
       if(tttWin(tttBoard, "X")){
         tttLocked = true;
         renderTttBoard();
+        playCorrectSound();
+        launchConfetti();
         feedback.textContent = "Победа! Оля официально пропускает тебя дальше ♡";
         showCongratsButton();
         return;
       }
 
       if(tttDraw()){
+        playCorrectSound();
+        launchConfetti();
         feedback.textContent = "Ничья! Но это праздничная версия — засчитываем победу ♡";
         tttLocked = true;
         renderTttBoard();
@@ -1652,6 +1832,7 @@
 
       if(tttWin(tttBoard, "O")){
         tttLocked = true;
+        playWrongSound();
         feedback.textContent = "Оля случайно победила 😄 Давай ещё раз!";
         const replay = document.getElementById("tttReplayBtn");
         if(replay) replay.classList.add("visible");
@@ -1661,6 +1842,8 @@
 
       if(tttDraw()){
         tttLocked = true;
+        playCorrectSound();
+        launchConfetti();
         feedback.textContent = "Ничья! Но праздничная комиссия засчитывает её как победу ♡";
         renderTttBoard();
         showCongratsButton();
@@ -1675,6 +1858,8 @@
 
       if(answerIndex === quiz.correct){
         button.classList.add("correct");
+        playCorrectSound();
+        launchConfetti();
         feedback.textContent = quiz.correctFeedback || "Правильно ♡";
         answerList.querySelectorAll(".answer").forEach(btn => btn.disabled = true);
 
@@ -1711,6 +1896,7 @@
         button.classList.remove("wrong");
         void button.offsetWidth;
         button.classList.add("wrong");
+        playWrongSound();
         feedback.textContent = quiz.wrongFeedback || "Почти! Попробуй ещё раз 😌";
       }
     }
