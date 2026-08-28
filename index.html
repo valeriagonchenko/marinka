@@ -807,7 +807,7 @@
       object-fit:contain;
       justify-self:center;
       align-self:end;
-      filter:drop-shadow(0 24px 30px rgba(96,57,72,.16));
+      filter:drop-shadow(0 24px 30px rgba(96,57,72,.18));
     }
 
     @media(max-width:900px){
@@ -1231,6 +1231,36 @@
         }
       }
     ];
+
+    // --- Предзагрузка картинок ---
+    // Собираем все пути к изображениям, которые используются в этапах игры,
+    // и заранее просим браузер их скачать и закэшировать. Благодаря этому,
+    // когда экран переключается на нужный этап, картинка уже в кэше и
+    // подставляется мгновенно — без секундной вспышки старого изображения.
+    function preloadStageImages(){
+      const paths = new Set([
+        "marina_chibi.png"
+      ]);
+
+      stages.forEach(stage => {
+        if(stage.sideImage) paths.add(stage.sideImage);
+        (stage.photos || []).forEach(photo => paths.add(photo));
+        (stage.danceFrames || []).forEach(frame => paths.add(frame));
+        if(stage.quiz){
+          if(stage.quiz.revealImage) paths.add(stage.quiz.revealImage);
+          (stage.quiz.options || []).forEach(option => {
+            if(option.image) paths.add(option.image);
+          });
+        }
+      });
+
+      paths.forEach(src => {
+        const img = new Image();
+        img.src = src;
+      });
+    }
+
+    preloadStageImages();
 
     const screens = {
       start: document.getElementById("startScreen"),
